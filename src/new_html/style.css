@@ -1,0 +1,121 @@
+
+.interact{
+     float : left;
+     width: 300px;
+     box-shadow: 1px 1px 12px #555;
+     margin : 5px 5px 5px 5px;
+     padding: 3px 3px 3px 3px;
+     overflow: scroll;
+   }
+
+#cy {
+  float : left;
+  width:500px;
+  height: 500px;
+
+ }
+
+.info{
+  float : left;
+  width : 600px;
+  border-style:solid;
+  border-width: 1px;
+  margin-bottom : 5px;
+  box-shadow: 1px 1px 12px #555;
+  color : #006400;
+  font-weight:bold;
+  font-size : 14px;
+  background-color : white;
+  padding: 3px 3px 3px 3px;
+}
+
+#molecule{
+  float:left;
+}
+
+#react_img { /*image div*/
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 3px;
+  height : 100px;
+  border-style: solid;
+  border-color: "green";
+  border-width: 2px;
+}
+
+#zoom{
+  float:left;
+  border-style:solid;
+  border-width: 1px;
+  box-shadow: 1px 1px 12px #555;
+  background-color : white;
+}
+
+#selenzyme-link{
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 3px;
+}
+
+
+.pointer {
+cursor: pointer;
+}
+
+th, td, p, input {
+    font:14px Verdana;
+}
+
+#table_choice{
+  height: 250px;
+  overflow: scroll;
+}
+
+table, th, td
+{
+    border: solid 1px #DDD;
+    border-collapse: collapse;
+    padding: 2px 3px;
+    text-align: center;
+    margin-top : 5px;
+    margin-left : 5px;
+    margin-bottom : 5px;
+    margin-right: 5px;
+
+}
+
+th {
+    font-weight:bold;
+    background-color : #006400;
+    color : white;
+}
+
+.inf1{
+  width : 200px;
+  border-left: 4px solid #006400;
+  padding-left: 4px;
+  margin-bottom: 5px;
+}
+
+.inf1>p  {
+  color : black;
+}
+
+.inf2>p {
+  color : black;
+}
+
+.inf2{
+  width : 150px;
+  border-left: 4px solid #006400;
+  padding-left: 4px;
+  margin-bottom: 5px;
+}
+
+.boxinf{
+  margin-bottom: 5px;
+}
+
+body{
+  background : linear-gradient(to right, #FFFFFF,#E8E9E8)
+}

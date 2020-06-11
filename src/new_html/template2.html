@@ -1,0 +1,563 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <meta charset='utf-8'></meta>
+    <title>Viewer</title>
+    <script id="elements"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.7.0/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
+    <script src="cytoscape-dagre.js"></script>
+    <script>
+    $(function() {
+
+      var cy = cytoscape({
+        container: $('#cy')});
+
+      function network(){   //CREATE THE INITIAL NETWORK
+          cy.add(obj);
+
+
+          var layout=cy.layout({
+                name: 'dagre',
+              });
+          layout.run();
+
+          cy.style(
+            cytoscape.stylesheet()
+
+              .selector( "node")
+              .css({
+                  "background-color": '#80D0D0',
+                  "label": "data(name)",
+                  "font-size": "14px"
+                })
+
+              .selector( "node[category='reaction']")
+              .css({
+                'background-color':"data(colour)",
+                'shape': 'roundrectangle'
+              })
+             .selector("node[category='reactant']")
+             .css( {
+               'background-color': '#52be80',
+             })
+
+            .selector( 'edge')
+              .css( {
+                'curve-style': 'bezier',
+                'width': '3px',
+                'target-arrow-shape': 'triangle',
+                'line-color':"data(colour)",
+              })
+
+
+              .selector("node[root='target']")
+              .css( {
+                'background-color': '#C60800',
+                'shape' : 'diamond',
+            })
+
+
+            .selector('.mySecondClass')
+            .css( {
+            'background-color': 'blue',
+              })
+
+            )};
+
+  function displaynet(filt){
+        network();
+        cy.remove("node[root='target_reaction']") //delete the reaction target node
+
+        Node_list=[];
+        Edge_list=[];
+        for (e in filt){ //For each pathway selected
+
+          Filtered_nodes=cy.filter(function(element,i){
+            return element.isNode() && (filt[e] in element.data("pathway"));
+          });
+          Filtered_edges=cy.filter('edge[pathway="'+filt[e]+'"]')
+
+          Node_list.push(Filtered_nodes);
+          Edge_list.push(Filtered_edges);
+        };
+
+        if (jQuery.inArray("all",filt)===(-1)){ //if "all" not selected
+        cy.nodes().remove();
+        for (j in Node_list){
+          cy.add(Node_list[j])
+        };
+        for (k in Edge_list){
+          cy.add(Edge_list[k])
+        };
+      };
+      var layout=cy.layout({
+            name: 'dagre',
+          });
+      layout.run();
+      };
+
+  cy.on('mouseover','node',function(e){
+    var node_select=e.target;
+    molecule=node_select.data("image");
+    if(molecule){
+    $("#molecule").append(molecule)};
+  });
+
+  cy.on('mouseout','node',function(e){
+    $("#molecule").empty();
+  });
+
+  cy.on('tap','node',function(e){
+    var node_select=e.target;
+    console.log(node_select.data("name"));
+    link=node_select.data("link");
+    if(link){
+      window.open(link)
+    };
+    if(node_select.data("category")==='reaction'){
+      rsmiles=node_select.data("Rsmiles")
+      console.log("C'est une rÃ©action");
+      $("#react_img").empty();
+      $(".inf1 > p").remove();
+      $(".inf2 > p").remove();
+      $("#sub_rule_id").append("<p>"+node_select.data("rule_id")+"</p>");
+      $("#sub_rule_score").append("<p>"+node_select.data("rule_score")+"</p>");
+      $("#sub_o").append("<p>"+node_select.data("dfG_prime_o")+"</p>");
+      $("#sub_m").append("<p>"+node_select.data("dfG_prime_m")+"</p>");
+      $("#sub_uncert").append("<p>"+node_select.data("dfG_uncert")+"</p>");
+      $("#sub_fba").append("<p>"+node_select.data("flux_value")+"</p>");
+      $("#sub_fba_obj").append("<p>"+node_select.data("fba_obj_name")+"</p>");
+
+      $("#selenzyme-link").empty();
+      $("#selenzyme_table").empty();
+      $("#information").show("slide", {direction: "right" }, 1000);
+      ri=node_select.data("image2");
+      ribig=node_select.data("image2big");
+      $("#react_img").append(ri);
+      $("#react_img").click(function(){
+         $('#big_image').empty();
+         $('#big_image').append(ribig);
+         $('#zoom').show("slide", {direction: "right" }, 1000);
+         });
+     link="http://selenzyme.synbiochem.co.uk/results?smarts=" + encodeURIComponent( rsmiles )
+     $("#selenzyme-link").append('<a target="_blank" href='+link+ '> Crosslink to Selenzyme' + '</a>');
+     CreateTable(node_select.data("data_tab"));
+  };
+  });
+
+//CREATE CHECKBOXES TO SELECT PATHWAYS INDIVIDUALLY
+  $('#table_path').find('tr').each(function(index){ //for each row in the pathway table
+    path_id=$(this).find('td').eq(0).text().trim() //name of the path for each row (result of previous sorts)
+    $(this).find('td').eq(1).html('<input type="checkbox" value='+path_id+'>'); //update select column with checkbox
+  });
+
+
+function CreateTable(data) {
+
+    // EXTRACT VALUE FOR HTML HEADER.
+
+    var col = [];
+    for (var key in data){
+      col.push(key)
+    };
+
+    // CREATE DYNAMIC TABLE.
+    var table = document.createElement("table");
+    table.id='sel'
+    // CREATE HTML TABLE HEADER ROW USING THE EXTRACTED HEADERS ABOVE.
+
+    var tr = table.insertRow(-1);                   // TABLE ROW.
+
+    for (var i = 0; i < col.length; i++) {
+        var th = document.createElement("th");      // TABLE HEADER.
+        th.innerHTML = col[i];
+        tr.appendChild(th);
+    };
+
+    //CREATE ROWS
+    for (var i = 0; i < Object.keys(data).length; i++) {
+        tr = table.insertRow(-1);
+        for (var j = 0; j < col.length; j++) {
+            var tabCell = tr.insertCell(-1);
+            tabCell.innerHTML = "";
+        }
+    };
+
+    // FINALLY ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.
+    var divContainer = document.getElementById("selenzyme_table");
+    divContainer.innerHTML = "";
+    divContainer.appendChild(table);
+
+    for (var c=0; c < col.length;c++){
+      L=Object.values(data[col[c]])
+
+    $("table[id='sel'] tr td:nth-child("+(c+1)+")").each(function(i){
+        $(this).text(L[i])
+      });
+
+      // COLUMN WITH THE UNIPROT LINK
+      if (c===1){
+        $("table[id='sel'] tr td:nth-child("+(c+1)+")").each(function(i){
+            url="https://www.uniprot.org/uniprot/"+L[i]
+            $(this).html('<a target="_blank "href='+url+'>'+L[i]+'</a>' )
+          });
+      };
+};
+};
+
+
+      $( "#interaction" ).draggable();
+      $( "#information" ).draggable();
+      $("#zoom").draggable();
+
+      $(":checkbox").change(function(){
+        var select_path=[]
+        $(':checkbox:checked').each(function(){
+          value=$(this).val();
+          select_path.push(value)});
+          console.log(select_path);
+        displaynet(select_path);
+        change_color();
+      });
+
+      $("#all_button").click(function(){
+        $(':checkbox').each(function() {
+          this.checked = true;  });
+        displaynet(["all"]);
+      });
+
+      $("#none_button").click(function(){
+        $(':checkbox').each(function() {
+          this.checked = false;  });
+        displaynet([""]);
+      });
+
+      $("#close_button").click(function(){
+        $("#information").hide("slide", {direction: "right" }, 1000);
+      });
+
+      $("#close_button_img").click(function(){
+        $("#zoom").hide("slide", {direction: "right" }, 1000);
+      });
+
+      $("#new_window").click(function(){
+        if(!window.opener) {
+          window.open(window.location.href, '_blank')};
+      });
+
+      $("#hide_inter").click(function(){
+          $("#interaction").toggle();
+        });
+
+      $("#selectbox").change(function(){ //UPLOAD SCORE COLUMN
+          $("#table_path th:last-child, #table_path td:last-child").remove(); //remove the last column
+          value=$("#selectbox :selected").val(); //Score chosen
+          text=$("#selectbox :selected").text(); //score chosen
+          $('#table_path').find('tr').each(function(index){ //for each row
+            path_id=$(this).find('td').eq(0).text().trim() //name of the path for each row (result of previous sorts) Trim() to delete escapes
+            $(this).find('th').eq(-1).after('<th class="pointer">'+text+'</th>'); //update score column name
+            $(this).find('td').eq(-1).after('<td>'+scores[value][path_id]+'</td>'); //update score
+          });
+          sortTabledesc()
+          change_color();
+      });
+
+      var sort="desc"
+
+      $("#table_path").on('click','th:eq(-1)',function(){
+        if (sort==="asc"){
+          sortTabledesc();
+          sort="desc";
+          return false;};
+        if (sort==="desc"){
+          sortTableacs();
+          sort="asc"};
+        });
+
+      function sortTableacs(){
+      var rows = $('#table_path tbody  tr').get();
+      text='\u2193'+$("#selectbox :selected").text(); //to add the edge for the sort
+      $("#table_path th:eq(-1)").html(text);
+
+      rows.sort(function(a, b) {
+
+          var A = parseFloat($(a).children('td').eq(-1).text().toUpperCase()); //really important to compare float and not str !
+          var B = parseFloat($(b).children('td').eq(-1).text().toUpperCase());
+
+          if(A <= B) {
+          return -1;
+          }
+
+          if(A > B) {
+          return 1;
+          }
+          return 0;
+
+          });
+
+      $.each(rows, function(index, row) {
+      $('#table_path tbody').append(row);
+      });
+    };
+
+      function sortTabledesc(){
+      var rows = $('#table_path tbody  tr').get();
+      text='\u2191'+$("#selectbox :selected").text(); //to add the edge for the sort
+      $("#table_path th:eq(-1)").html(text);
+
+      rows.sort(function(a, b) {
+
+          var A = parseFloat($(a).children('td').eq(-1).text().toUpperCase()); //really important to compare float and not str !
+          var B = parseFloat($(b).children('td').eq(-1).text().toUpperCase());
+
+          if(A <= B) {
+          return 1;
+          }
+
+          if(A > B) {
+          return -1;
+          }
+          return 0;
+
+          });
+
+      $.each(rows, function(index, row) {
+      $('#table_path tbody').append(row);
+      });
+    };
+
+    $("#rule_button").click(function(){
+      $("#rule").toggle()
+    });
+
+    $("#thermo_button").click(function(){
+      $("#thermo").toggle()
+    });
+
+    $("#flux_button").click(function(){
+      $("#flux").toggle()
+    });
+
+
+    $("#reset_color_button").click(function(){
+      reset_col();
+    });
+
+    $("#gradient_color_button").click(function(){
+      change_color();
+    });
+
+    function reset_col(){  //To restore original colours
+        cy.$('node[category="reaction"]').forEach(function(ele)  {
+          ele.style("background-color",ele.data("colour"))
+        });
+        cy.edges().forEach(function(ele){
+          ele.style("line-color",ele.data("colour"))
+        });
+    };
+
+    function change_color(){
+      value=$("#selectbox :selected").val();
+      col_dic='col_'+value;
+      if (value !="Choose_a_score"){
+      cy.$('node[category="reaction"]').forEach(function(ele){
+          path=Object.keys(ele.data("pathway"))[0]; //to get the pathway of the node
+          ele.style("background-color",scores_col[col_dic][path]);
+        });
+      cy.edges().forEach(function(ele){
+          path=ele.data("pathway");
+          console.log(path)
+          ele.style("line-color",scores_col[col_dic][path]);
+      });
+        };
+      };
+
+});
+
+    </script>
+</head>
+
+<style>
+
+.interact{
+     float : left;
+     width: 300px;
+     box-shadow: 1px 1px 12px #555;
+     margin : 5px 5px 5px 5px;
+     padding: 3px 3px 3px 3px;
+     overflow: scroll;
+   }
+
+#cy {
+  float : left;
+  width:500px;
+  height: 500px;
+
+ }
+
+.info{
+  float : left;
+  width : 600px;
+  border-style:solid;
+  border-width: 1px;
+  margin-bottom : 5px;
+  box-shadow: 1px 1px 12px #555;
+  color : #006400;
+  font-weight:bold;
+  font-size : 14px;
+  background-color : white;
+  padding: 3px 3px 3px 3px;
+}
+
+#molecule{
+  float:left;
+}
+
+#react_img { /*image div*/
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 3px;
+  height : 100px;
+  border-style: solid;
+  border-color: "green";
+  border-width: 2px;
+}
+
+#zoom{
+  float:left;
+  border-style:solid;
+  border-width: 1px;
+  box-shadow: 1px 1px 12px #555;
+  background-color : white;
+}
+
+#selenzyme-link{
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 3px;
+}
+
+
+.pointer {
+cursor: pointer;
+}
+
+th, td, p, input {
+    font:14px Verdana;
+}
+
+#table_choice{
+  height: 250px;
+  overflow: scroll;
+}
+
+table, th, td
+{
+    border: solid 1px #DDD;
+    border-collapse: collapse;
+    padding: 2px 3px;
+    text-align: center;
+    margin-top : 5px;
+    margin-left : 5px;
+    margin-bottom : 5px;
+    margin-right: 5px;
+
+}
+
+th {
+    font-weight:bold;
+    background-color : #006400;
+    color : white;
+}
+
+.inf1{
+  width : 200px;
+  border-left: 4px solid #006400;
+  padding-left: 4px;
+  margin-bottom: 5px;
+}
+
+.inf1>p  {
+  color : black;
+}
+
+.inf2>p {
+  color : black;
+}
+
+.inf2{
+  width : 150px;
+  border-left: 4px solid #006400;
+  padding-left: 4px;
+  margin-bottom: 5px;
+}
+
+.boxinf{
+  margin-bottom: 5px;
+}
+
+body{
+  background : linear-gradient(to right, #FFFFFF,#E8E9E8)
+}
+
+</style>
+
+
+
+<body>
+  <div>
+    <button id="new_window" >Open in a new window </button>
+    <button id="hide_inter"> Hide/View pathway table </button>
+
+  </div>
+  <div id="interaction" class="interact">
+
+    <div id="table_choice">
+      <div id="table_path"></div>
+    </div>
+      <input id="all_button" type="button" value="All" />
+      <input id="none_button" type="button" value="None"/>
+      <select id="selectbox"></select>
+      <input id="reset_color_button" type="button" value="Default colors"/>
+      <input id="gradient_color_button" type="button" value="Gradient colors"/>
+  </div>
+
+  <div id="cy"></div>
+  <div id="molecule"></div>
+
+  <div class="info" id="information" style="display:none;">
+    <div style="text-align:center">Information</div>
+    <input id="close_button" type="button" value="Close"/>
+    <div id="react_img" class="pointer"></div>
+    <input id="rule_button" type="button" value="Rule"/>
+    <input id="thermo_button" type="button" value="Thermodynamics"/>
+    <input id="flux_button" type="button" value="Flux"/>
+        <div id="rule" style="display:none;" class="boxinf">
+          <div id="sub_rule_id" class="inf1">Rule ID</div>
+          <div id="sub_rule_score" class="inf2">Rule Score</div>
+        </div>
+        <div id="thermo"style="display:none;" class="boxinf">
+          <div id="sub_o" class="inf2">dfG prime o (kJ/mol)</div>
+          <div id="sub_m" class="inf2">dfG prime m (kJ/mol)</div>
+          <div id="sub_uncert" class="inf2">dfG uncert (kJ/mol)</div>
+        </div>
+        <div id="flux"style="display:none;" class="boxinf">
+          <div id="sub_fba" class="inf2">FBA (mmol/gDW/h)</div>
+          <div id="sub_fba_obj" class="inf1">FBA biomass objective</div>
+        </div>
+    <div id="selenzyme-link"></div>
+    <div id="selenzyme_table"></div>
+  </div>
+  <div id="zoom" style="display:none;">
+      <input id="close_button_img" type="button" value="Close"/>
+      <div id="big_image"></div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+/*
+__author__ = 'Joan Hérisson', 'Thomas Duigou'
+__license__ = 'MIT'
+*/
+
+#outerdiv {
+    width:300px;
+    height:500px;
+    overflow:hidden;
+    position:relative;
+} #inneriframe
+
+{
+    position:absolute;
+    top:-225px;
+    left:0px;
+    width:300px;
+    height:1200px;
+}

@@ -1,0 +1,22 @@
+version: '2.4'
+
+services:
+
+  gen-req:
+    image: brsynth/${COMPOSE_PROJECT_NAME}.req
+    build:
+      context: ..
+      dockerfile: docker/req.dockerfile
+      args:
+        IMAGE: ${BASE_IMAGE}
+    command: pip-compile requirements.in > requirements.txt
+    volumes:
+      - $PWD/..:/req
+
+  tool:
+    image: brsynth/${COMPOSE_PROJECT_NAME}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        IMAGE: ${BASE_IMAGE}

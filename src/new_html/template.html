@@ -1,0 +1,71 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <meta charset='utf-8'></meta>
+    <title>Viewer</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.7.0/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
+    <script src="cytoscape-dagre.js"></script>
+    <script src="network_viewer.js"></script>
+    <script src="network_elements.js"></script>
+    <LINK href="style.css" rel="stylesheet" type="text/css">
+</head>
+
+
+<body>
+  <div>
+    <button id="new_window" >Open in a new window </button>
+    <button id="hide_inter"> Hide/View pathway table </button>
+
+  </div>
+  <div id="interaction" class="interact">
+
+    <div id="table_choice">
+      <div id="table_path"></div>
+    </div>
+      <input id="all_button" type="button" value="All" />
+      <input id="none_button" type="button" value="None"/>
+      <select id="selectbox"></select>
+      <input id="reset_color_button" type="button" value="Default colors"/>
+      <input id="gradient_color_button" type="button" value="Gradient colors"/>
+  </div>
+
+  <div id="cy"></div>
+  <div id="molecule"></div>
+
+  <div class="info" id="information" style="display:none;">
+    <div style="text-align:center">Information</div>
+    <input id="close_button" type="button" value="Close"/>
+    <div id="react_img" class="pointer"></div>
+    <div id="reversibility" class='inf2'></div>
+    <input id="rule_button" type="button" value="Rule"/>
+    <input id="thermo_button" type="button" value="Thermodynamics"/>
+    <input id="flux_button" type="button" value="Flux"/>
+        <div id="rule" style="display:none;" class="boxinf">
+          <div id="sub_rule_id" class="inf1">Rule ID</div>
+          <div id="sub_rule_score" class="inf2">Rule Score</div>
+        </div>
+        <div id="thermo"style="display:none;" class="boxinf">
+          <div id="sub_o" class="inf2">dfG prime o (kJ/mol)</div>
+          <div id="sub_m" class="inf2">dfG prime m (kJ/mol)</div>
+          <div id="sub_uncert" class="inf2">dfG uncert (kJ/mol)</div>
+        </div>
+        <div id="flux"style="display:none;" class="boxinf">
+          <div id="sub_fba" class="inf2">FBA (mmol/gDW/h)</div>
+          <div id="sub_fba_obj" class="inf1">FBA biomass objective</div>
+        </div>
+    <div id="selenzyme-link"></div>
+    <div id="selenzyme_table"></div>
+  </div>
+  <div id="zoom" style="display:none;">
+      <input id="close_button_img" type="button" value="Close"/>
+      <div id="big_image"></div>
+
+  </div>
+
+</body>
+</html>
